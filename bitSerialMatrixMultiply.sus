@@ -45,20 +45,18 @@ module BitSerialMatrixMultiply {
     input gen int WIDTH
     input gen int HEIGHT
     input gen int[WIDTH][HEIGHT] MATRIX
-    
     // 32 right now, because ints are't sized yet. 
     gen int INT_BITWIDTH = 32
 
-    BitShifter::<WIDTH, 32;> shifter
-    BitSerialMatrixMultiplyState::<WIDTH, HEIGHT, MATRIX;> bsm_state
-
     interface BitSerialMatrixMultiply : bool start, int[WIDTH] values -> int[HEIGHT] result
 
-    FixedSizeIterator::<UP_TO = INT_BITWIDTH;> iter
+    BitShifter::<WIDTH, 32;> shifter
+    FixedSizeIterator::<UP_TO = 32;> iter
+    BitSerialMatrixMultiplyState::<WIDTH, HEIGHT, MATRIX;> bsm_state
 
     shifter.start(start, values)
-    bsm_state.start(start)
     iter.start(start)
+    bsm_state.start(start)
     
     bool[WIDTH] bits = shifter.shift(iter.valid)
     bsm_state.feed(iter.valid, bits)
@@ -101,7 +99,6 @@ module BitSerialMatrixMultiplyState {
     input gen int[WIDTH][HEIGHT] MATRIX
 
     interface start : bool start
-
     interface feed : bool feed, bool[WIDTH] vector_bits
 
     output state int[HEIGHT] result_vector
@@ -109,12 +106,10 @@ module BitSerialMatrixMultiplyState {
     for int Y in 0..HEIGHT {
         BitSerialRow::<SIZE = WIDTH, WEIGHTS = MATRIX[Y];> row
 
-        if feed {
-            result_vector[Y] = result_vector[Y] * 2 + row(vector_bits)
-        }
-
         if start {
             result_vector[Y] = 0
+        } else if feed {
+            result_vector[Y] = result_vector[Y] * 2 + row(vector_bits)
         }
     }
 }
