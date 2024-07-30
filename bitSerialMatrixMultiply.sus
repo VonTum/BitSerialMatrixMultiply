@@ -3,7 +3,7 @@
 module BitSerialMatrixMultiplyTinyIO {
     interface BitSerialMatrixMultiplyTinyIO : bool start, int value -> bool finish, int result
 
-    BitSerialMatrixMultiply bsmm
+    BitSerialMatrixMultiplySpecific bsmm
 
     state int[10] stored_values
     state int last_value_use_as_addr
@@ -15,7 +15,7 @@ module BitSerialMatrixMultiplyTinyIO {
 }
 
 
-module BitSerialMatrixMultiply {
+module BitSerialMatrixMultiplySpecific {
     gen int[10][15] MATRIX
 
     for int X in 0..15 {
@@ -29,9 +29,11 @@ module BitSerialMatrixMultiply {
         }
     }
     
-    BitSerialMatrixMultiplyTemplate::<WIDTH = 10, HEIGHT = 15, MATRIX = MATRIX;> bsmm
+    BitSerialMatrixMultiply::<WIDTH = 10, HEIGHT = 15, MATRIX = MATRIX;> bsmm
 
-    interface BitSerialMatrixMultiply : bool start, int[10] values -> bool finish'36, int[15] result'36
+    interface BitSerialMatrixMultiplySpecific : 
+        bool start'0, int[10] values'0 -> bool finish'36, int[15] result'36
+
     finish = start
 
     result = bsmm(start, values)
@@ -39,7 +41,7 @@ module BitSerialMatrixMultiply {
 
 
 
-module BitSerialMatrixMultiplyTemplate {
+module BitSerialMatrixMultiply {
     input gen int WIDTH
     input gen int HEIGHT
     input gen int[WIDTH][HEIGHT] MATRIX
@@ -47,33 +49,32 @@ module BitSerialMatrixMultiplyTemplate {
     // 32 right now, because ints are't sized yet. 
     gen int INT_BITWIDTH = 32
 
+    BitShifter::<WIDTH, 32;> shifter
     BitSerialMatrixMultiplyState::<WIDTH, HEIGHT, MATRIX;> bsm_state
 
-    interface BitSerialMatrixMultiplyTemplate : bool start, int[WIDTH] values -> int[HEIGHT] result
-
-    state bool[WIDTH][INT_BITWIDTH] split_into_bits
+    interface BitSerialMatrixMultiply : bool start, int[WIDTH] values -> int[HEIGHT] result
 
     FixedSizeIterator::<UP_TO = INT_BITWIDTH;> iter
 
-    // Explicitly not use value
-    int _ = iter.value
-
-    // This is above start, so start has write priority on split_into_bits. 
-    if iter.valid {
-        // It's a shift register
-        for int BIT in 1..INT_BITWIDTH {
-            split_into_bits[BIT] = split_into_bits[BIT - 1]
-        }
-
-        bsm_state.feed(true, split_into_bits[INT_BITWIDTH-1])
-    } else {
-        bsm_state.feed(false, split_into_bits[INT_BITWIDTH-1])
-    }
-
-    result = LatencyOffset::<INT_BITWIDTH+1;int[HEIGHT]>(bsm_state.result_vector)
-
+    shifter.start(start, values)
     bsm_state.start(start)
     iter.start(start)
+    
+    bool[WIDTH] bits = shifter.shift(iter.valid)
+    bsm_state.feed(iter.valid, bits)
+
+    result = LatencyOffset::<INT_BITWIDTH+1;int[HEIGHT]>(bsm_state.result_vector)
+}
+
+module BitShifter {
+    input gen int WIDTH
+    input gen int INT_BITWIDTH
+
+    interface start : bool start, int[WIDTH] values
+    interface shift : bool shift -> bool[WIDTH] bits
+
+    state bool[WIDTH][INT_BITWIDTH] split_into_bits
+
     if start {
         // initialize split_into_bits
         for int I in 0..WIDTH {
@@ -83,6 +84,13 @@ module BitSerialMatrixMultiplyTemplate {
                 split_into_bits[BIT][I] = value_bits[BIT]
             }
         }
+    } else if shift {
+        for int BIT in 1..INT_BITWIDTH {
+            split_into_bits[BIT] = split_into_bits[BIT - 1]
+        }
+    }
+    if shift {
+        bits = split_into_bits[INT_BITWIDTH - 1]
     }
 }
 

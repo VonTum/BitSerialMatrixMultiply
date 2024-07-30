@@ -1,1 +1,1 @@
-sus_compiler --standalone BitSerialMatrixMultiply *.sus
+sus_compiler --standalone BitSerialMatrixMultiplyTinyIO *.sus
