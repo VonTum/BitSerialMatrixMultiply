@@ -232,13 +232,10 @@ module BitSerialMatrixMultiply_WIDTH_10_HEIGHT_15_MATRIX___0_2_0_0_0_10_0_0_0_18
 	output /*mux_wire*/ logic [14:0][31:0] result
 );
 
-/*latency*/ logic  _start_D1; always_ff @(posedge clk) begin _start_D1 <= start; end
-/*latency*/ logic  _start_D2; always_ff @(posedge clk) begin _start_D2 <= _start_D1; end
-/*latency*/ logic  _start_D3; always_ff @(posedge clk) begin _start_D3 <= _start_D2; end
 /*mux_wire*/ logic  shifter_start;
 /*mux_wire*/ logic [9:0][31:0] shifter_values;
-/*mux_wire*/ logic  bsm_state_start;
 /*mux_wire*/ logic  iter_start;
+/*mux_wire*/ logic  bsm_state_start;
 /*mux_wire*/ logic [9:0] bits;
 wire  iter_valid;
 /*mux_wire*/ logic  shifter_shift;
@@ -255,19 +252,19 @@ BitShifter_WIDTH_10_INT_BITWIDTH_32_ shifter(
 	.shift(shifter_shift),
 	.bits(shifter_bits)
 );
-BitSerialMatrixMultiplyState_WIDTH_10_HEIGHT_15_MATRIX___0_2_0_0_0_10_0_0_0_18___0_3_0_0_0_0_0_0_0_19___2_4_0_0_10_0_14_0_0_20___0_5_7_9_0_0_15_0_0_21___0_6_0_0_0_0_0_0_0_22___0_7_0_0_0_15_0_0_0_23___6_8_0_12_14_16_0_0_0_24___0_9_0_0_0_0_0_21_0_25___0_10_12_0_0_0_0_22_0_26___0_11_0_0_0_0_0_23_0_27___10_12_14_0_18_0_0_24_0_28___0_13_0_17_0_21_23_0_0_29___0_14_0_0_0_22_24_0_0_30___0_15_0_0_0_0_0_0_0_31___14_16_0_20_22_0_0_0_0_32___ bsm_state(
-	.clk(clk),
-	.start(bsm_state_start),
-	.feed(bsm_state_feed),
-	.vector_bits(bsm_state_vector_bits),
-	.result_vector(bsm_state_result_vector)
-);
 FixedSizeIterator_UP_TO_32_ iter(
 	.clk(clk),
 	.valid(iter_valid),
 	.value(),
 	.last(),
 	.start(iter_start)
+);
+BitSerialMatrixMultiplyState_WIDTH_10_HEIGHT_15_MATRIX___0_2_0_0_0_10_0_0_0_18___0_3_0_0_0_0_0_0_0_19___2_4_0_0_10_0_14_0_0_20___0_5_7_9_0_0_15_0_0_21___0_6_0_0_0_0_0_0_0_22___0_7_0_0_0_15_0_0_0_23___6_8_0_12_14_16_0_0_0_24___0_9_0_0_0_0_0_21_0_25___0_10_12_0_0_0_0_22_0_26___0_11_0_0_0_0_0_23_0_27___10_12_14_0_18_0_0_24_0_28___0_13_0_17_0_21_23_0_0_29___0_14_0_0_0_22_24_0_0_30___0_15_0_0_0_0_0_0_0_31___14_16_0_20_22_0_0_0_0_32___ bsm_state(
+	.clk(clk),
+	.start(bsm_state_start),
+	.feed(bsm_state_feed),
+	.vector_bits(bsm_state_vector_bits),
+	.result_vector(bsm_state_result_vector)
 );
 LatencyOffset_T_int_15__OFFSET_33_ _1(
 	.clk(clk),
@@ -314,13 +311,13 @@ always_comb begin
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
-	bsm_state_start = 'x;
-	bsm_state_start = _start_D3;
+	iter_start = 'x;
+	iter_start = start;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
-	iter_start = 'x;
-	iter_start = start;
+	bsm_state_start = 'x;
+	bsm_state_start = start;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -1932,6 +1929,34 @@ always_comb begin
 end
 endmodule
 
+// ::FixedSizeIterator::<UP_TO = 32>
+module FixedSizeIterator_UP_TO_32_(
+	input clk,
+	output /*mux_wire*/ logic  valid,
+	output /*state*/ logic [31:0] value,
+	output /*mux_wire*/ logic  last,
+	input wire  start
+);
+
+wire  _2 = value == 31;
+wire  _4 = value != 32;
+wire [31:0] _7 = value + 1;
+always_comb begin
+	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
+	valid = 'x;
+	valid = _4;
+end
+always_ff @(posedge clk) begin
+	if(start) value <= 0;
+	if(!start) if(valid) value <= _7;
+end
+always_comb begin
+	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
+	last = 'x;
+	last = _2;
+end
+endmodule
+
 // ::BitSerialMatrixMultiplyState::<WIDTH = 10, HEIGHT = 15, MATRIX = [[0, 2, 0, 0, 0, 10, 0, 0, 0, 18], [0, 3, 0, 0, 0, 0, 0, 0, 0, 19], [2, 4, 0, 0, 10, 0, 14, 0, 0, 20], [0, 5, 7, 9, 0, 0, 15, 0, 0, 21], [0, 6, 0, 0, 0, 0, 0, 0, 0, 22], [0, 7, 0, 0, 0, 15, 0, 0, 0, 23], [6, 8, 0, 12, 14, 16, 0, 0, 0, 24], [0, 9, 0, 0, 0, 0, 0, 21, 0, 25], [0, 10, 12, 0, 0, 0, 0, 22, 0, 26], [0, 11, 0, 0, 0, 0, 0, 23, 0, 27], [10, 12, 14, 0, 18, 0, 0, 24, 0, 28], [0, 13, 0, 17, 0, 21, 23, 0, 0, 29], [0, 14, 0, 0, 0, 22, 24, 0, 0, 30], [0, 15, 0, 0, 0, 0, 0, 0, 0, 31], [14, 16, 0, 20, 22, 0, 0, 0, 0, 32]]>
 module BitSerialMatrixMultiplyState_WIDTH_10_HEIGHT_15_MATRIX___0_2_0_0_0_10_0_0_0_18___0_3_0_0_0_0_0_0_0_19___2_4_0_0_10_0_14_0_0_20___0_5_7_9_0_0_15_0_0_21___0_6_0_0_0_0_0_0_0_22___0_7_0_0_0_15_0_0_0_23___6_8_0_12_14_16_0_0_0_24___0_9_0_0_0_0_0_21_0_25___0_10_12_0_0_0_0_22_0_26___0_11_0_0_0_0_0_23_0_27___10_12_14_0_18_0_0_24_0_28___0_13_0_17_0_21_23_0_0_29___0_14_0_0_0_22_24_0_0_30___0_15_0_0_0_0_0_0_0_31___14_16_0_20_22_0_0_0_0_32___(
 	input clk,
@@ -1941,96 +1966,99 @@ module BitSerialMatrixMultiplyState_WIDTH_10_HEIGHT_15_MATRIX___0_2_0_0_0_10_0_0
 	output /*state*/ logic [14:0][31:0] result_vector
 );
 
-/*latency*/ logic  _feed_N2; always_ff @(posedge clk) begin _feed_N2 <= feed; end
-/*latency*/ logic  _feed_N1; always_ff @(posedge clk) begin _feed_N1 <= _feed_N2; end
-/*latency*/ logic  _feed_D0; always_ff @(posedge clk) begin _feed_D0 <= _feed_N1; end
-wire [31:0] _2 = result_vector[0];
-wire [31:0] _4 = _2 * 2;
+/*latency*/ logic  _start_D1; always_ff @(posedge clk) begin _start_D1 <= start; end
+/*latency*/ logic  _start_D2; always_ff @(posedge clk) begin _start_D2 <= _start_D1; end
+/*latency*/ logic  _start_D3; always_ff @(posedge clk) begin _start_D3 <= _start_D2; end
+/*latency*/ logic  _feed_D1; always_ff @(posedge clk) begin _feed_D1 <= feed; end
+/*latency*/ logic  _feed_D2; always_ff @(posedge clk) begin _feed_D2 <= _feed_D1; end
+/*latency*/ logic  _feed_D3; always_ff @(posedge clk) begin _feed_D3 <= _feed_D2; end
+wire [31:0] _4 = result_vector[0];
+wire [31:0] _6 = _4 * 2;
 /*mux_wire*/ logic [9:0] row_bits;
 wire [31:0] row_row_total;
-/*latency*/ logic [31:0] _row_row_total_D0; always_ff @(posedge clk) begin _row_row_total_D0 <= row_row_total; end
-wire [31:0] _5 = _4 + _row_row_total_D0;
-wire [31:0] _10 = result_vector[1];
-wire [31:0] _12 = _10 * 2;
+/*latency*/ logic [31:0] _row_row_total_D3; always_ff @(posedge clk) begin _row_row_total_D3 <= row_row_total; end
+wire [31:0] _7 = _6 + _row_row_total_D3;
+wire [31:0] _12 = result_vector[1];
+wire [31:0] _14 = _12 * 2;
 /*mux_wire*/ logic [9:0] row_2_bits;
 wire [31:0] row_2_row_total;
-/*latency*/ logic [31:0] _row_2_row_total_N1; always_ff @(posedge clk) begin _row_2_row_total_N1 <= row_2_row_total; end
-/*latency*/ logic [31:0] _row_2_row_total_D0; always_ff @(posedge clk) begin _row_2_row_total_D0 <= _row_2_row_total_N1; end
-wire [31:0] _13 = _12 + _row_2_row_total_D0;
-wire [31:0] _18 = result_vector[2];
-wire [31:0] _20 = _18 * 2;
+/*latency*/ logic [31:0] _row_2_row_total_D2; always_ff @(posedge clk) begin _row_2_row_total_D2 <= row_2_row_total; end
+/*latency*/ logic [31:0] _row_2_row_total_D3; always_ff @(posedge clk) begin _row_2_row_total_D3 <= _row_2_row_total_D2; end
+wire [31:0] _15 = _14 + _row_2_row_total_D3;
+wire [31:0] _20 = result_vector[2];
+wire [31:0] _22 = _20 * 2;
 /*mux_wire*/ logic [9:0] row_3_bits;
 wire [31:0] row_3_row_total;
-wire [31:0] _21 = _20 + row_3_row_total;
-wire [31:0] _26 = result_vector[3];
-wire [31:0] _28 = _26 * 2;
+wire [31:0] _23 = _22 + row_3_row_total;
+wire [31:0] _28 = result_vector[3];
+wire [31:0] _30 = _28 * 2;
 /*mux_wire*/ logic [9:0] row_4_bits;
 wire [31:0] row_4_row_total;
-wire [31:0] _29 = _28 + row_4_row_total;
-wire [31:0] _34 = result_vector[4];
-wire [31:0] _36 = _34 * 2;
+wire [31:0] _31 = _30 + row_4_row_total;
+wire [31:0] _36 = result_vector[4];
+wire [31:0] _38 = _36 * 2;
 /*mux_wire*/ logic [9:0] row_5_bits;
 wire [31:0] row_5_row_total;
-/*latency*/ logic [31:0] _row_5_row_total_N1; always_ff @(posedge clk) begin _row_5_row_total_N1 <= row_5_row_total; end
-/*latency*/ logic [31:0] _row_5_row_total_D0; always_ff @(posedge clk) begin _row_5_row_total_D0 <= _row_5_row_total_N1; end
-wire [31:0] _37 = _36 + _row_5_row_total_D0;
-wire [31:0] _42 = result_vector[5];
-wire [31:0] _44 = _42 * 2;
+/*latency*/ logic [31:0] _row_5_row_total_D2; always_ff @(posedge clk) begin _row_5_row_total_D2 <= row_5_row_total; end
+/*latency*/ logic [31:0] _row_5_row_total_D3; always_ff @(posedge clk) begin _row_5_row_total_D3 <= _row_5_row_total_D2; end
+wire [31:0] _39 = _38 + _row_5_row_total_D3;
+wire [31:0] _44 = result_vector[5];
+wire [31:0] _46 = _44 * 2;
 /*mux_wire*/ logic [9:0] row_6_bits;
 wire [31:0] row_6_row_total;
-/*latency*/ logic [31:0] _row_6_row_total_D0; always_ff @(posedge clk) begin _row_6_row_total_D0 <= row_6_row_total; end
-wire [31:0] _45 = _44 + _row_6_row_total_D0;
-wire [31:0] _50 = result_vector[6];
-wire [31:0] _52 = _50 * 2;
+/*latency*/ logic [31:0] _row_6_row_total_D3; always_ff @(posedge clk) begin _row_6_row_total_D3 <= row_6_row_total; end
+wire [31:0] _47 = _46 + _row_6_row_total_D3;
+wire [31:0] _52 = result_vector[6];
+wire [31:0] _54 = _52 * 2;
 /*mux_wire*/ logic [9:0] row_7_bits;
 wire [31:0] row_7_row_total;
-wire [31:0] _53 = _52 + row_7_row_total;
-wire [31:0] _58 = result_vector[7];
-wire [31:0] _60 = _58 * 2;
+wire [31:0] _55 = _54 + row_7_row_total;
+wire [31:0] _60 = result_vector[7];
+wire [31:0] _62 = _60 * 2;
 /*mux_wire*/ logic [9:0] row_8_bits;
 wire [31:0] row_8_row_total;
-/*latency*/ logic [31:0] _row_8_row_total_D0; always_ff @(posedge clk) begin _row_8_row_total_D0 <= row_8_row_total; end
-wire [31:0] _61 = _60 + _row_8_row_total_D0;
-wire [31:0] _66 = result_vector[8];
-wire [31:0] _68 = _66 * 2;
+/*latency*/ logic [31:0] _row_8_row_total_D3; always_ff @(posedge clk) begin _row_8_row_total_D3 <= row_8_row_total; end
+wire [31:0] _63 = _62 + _row_8_row_total_D3;
+wire [31:0] _68 = result_vector[8];
+wire [31:0] _70 = _68 * 2;
 /*mux_wire*/ logic [9:0] row_9_bits;
 wire [31:0] row_9_row_total;
-/*latency*/ logic [31:0] _row_9_row_total_D0; always_ff @(posedge clk) begin _row_9_row_total_D0 <= row_9_row_total; end
-wire [31:0] _69 = _68 + _row_9_row_total_D0;
-wire [31:0] _74 = result_vector[9];
-wire [31:0] _76 = _74 * 2;
+/*latency*/ logic [31:0] _row_9_row_total_D3; always_ff @(posedge clk) begin _row_9_row_total_D3 <= row_9_row_total; end
+wire [31:0] _71 = _70 + _row_9_row_total_D3;
+wire [31:0] _76 = result_vector[9];
+wire [31:0] _78 = _76 * 2;
 /*mux_wire*/ logic [9:0] row_10_bits;
 wire [31:0] row_10_row_total;
-/*latency*/ logic [31:0] _row_10_row_total_D0; always_ff @(posedge clk) begin _row_10_row_total_D0 <= row_10_row_total; end
-wire [31:0] _77 = _76 + _row_10_row_total_D0;
-wire [31:0] _82 = result_vector[10];
-wire [31:0] _84 = _82 * 2;
+/*latency*/ logic [31:0] _row_10_row_total_D3; always_ff @(posedge clk) begin _row_10_row_total_D3 <= row_10_row_total; end
+wire [31:0] _79 = _78 + _row_10_row_total_D3;
+wire [31:0] _84 = result_vector[10];
+wire [31:0] _86 = _84 * 2;
 /*mux_wire*/ logic [9:0] row_11_bits;
 wire [31:0] row_11_row_total;
-wire [31:0] _85 = _84 + row_11_row_total;
-wire [31:0] _90 = result_vector[11];
-wire [31:0] _92 = _90 * 2;
+wire [31:0] _87 = _86 + row_11_row_total;
+wire [31:0] _92 = result_vector[11];
+wire [31:0] _94 = _92 * 2;
 /*mux_wire*/ logic [9:0] row_12_bits;
 wire [31:0] row_12_row_total;
-wire [31:0] _93 = _92 + row_12_row_total;
-wire [31:0] _98 = result_vector[12];
-wire [31:0] _100 = _98 * 2;
+wire [31:0] _95 = _94 + row_12_row_total;
+wire [31:0] _100 = result_vector[12];
+wire [31:0] _102 = _100 * 2;
 /*mux_wire*/ logic [9:0] row_13_bits;
 wire [31:0] row_13_row_total;
-/*latency*/ logic [31:0] _row_13_row_total_D0; always_ff @(posedge clk) begin _row_13_row_total_D0 <= row_13_row_total; end
-wire [31:0] _101 = _100 + _row_13_row_total_D0;
-wire [31:0] _106 = result_vector[13];
-wire [31:0] _108 = _106 * 2;
+/*latency*/ logic [31:0] _row_13_row_total_D3; always_ff @(posedge clk) begin _row_13_row_total_D3 <= row_13_row_total; end
+wire [31:0] _103 = _102 + _row_13_row_total_D3;
+wire [31:0] _108 = result_vector[13];
+wire [31:0] _110 = _108 * 2;
 /*mux_wire*/ logic [9:0] row_14_bits;
 wire [31:0] row_14_row_total;
-/*latency*/ logic [31:0] _row_14_row_total_N1; always_ff @(posedge clk) begin _row_14_row_total_N1 <= row_14_row_total; end
-/*latency*/ logic [31:0] _row_14_row_total_D0; always_ff @(posedge clk) begin _row_14_row_total_D0 <= _row_14_row_total_N1; end
-wire [31:0] _109 = _108 + _row_14_row_total_D0;
-wire [31:0] _114 = result_vector[14];
-wire [31:0] _116 = _114 * 2;
+/*latency*/ logic [31:0] _row_14_row_total_D2; always_ff @(posedge clk) begin _row_14_row_total_D2 <= row_14_row_total; end
+/*latency*/ logic [31:0] _row_14_row_total_D3; always_ff @(posedge clk) begin _row_14_row_total_D3 <= _row_14_row_total_D2; end
+wire [31:0] _111 = _110 + _row_14_row_total_D3;
+wire [31:0] _116 = result_vector[14];
+wire [31:0] _118 = _116 * 2;
 /*mux_wire*/ logic [9:0] row_15_bits;
 wire [31:0] row_15_row_total;
-wire [31:0] _117 = _116 + row_15_row_total;
+wire [31:0] _119 = _118 + row_15_row_total;
 BitSerialRow_SIZE_10_WEIGHTS__0_2_0_0_0_10_0_0_0_18__ row(
 	.clk(clk),
 	.bits(row_bits),
@@ -2107,36 +2135,36 @@ BitSerialRow_SIZE_10_WEIGHTS__14_16_0_20_22_0_0_0_0_32__ row_15(
 	.row_total(row_15_row_total)
 );
 always_ff @(posedge clk) begin
-	if(_feed_D0) result_vector[0] <= _5;
-	if(start) result_vector[0] <= 0;
-	if(_feed_D0) result_vector[1] <= _13;
-	if(start) result_vector[1] <= 0;
-	if(_feed_D0) result_vector[2] <= _21;
-	if(start) result_vector[2] <= 0;
-	if(_feed_D0) result_vector[3] <= _29;
-	if(start) result_vector[3] <= 0;
-	if(_feed_D0) result_vector[4] <= _37;
-	if(start) result_vector[4] <= 0;
-	if(_feed_D0) result_vector[5] <= _45;
-	if(start) result_vector[5] <= 0;
-	if(_feed_D0) result_vector[6] <= _53;
-	if(start) result_vector[6] <= 0;
-	if(_feed_D0) result_vector[7] <= _61;
-	if(start) result_vector[7] <= 0;
-	if(_feed_D0) result_vector[8] <= _69;
-	if(start) result_vector[8] <= 0;
-	if(_feed_D0) result_vector[9] <= _77;
-	if(start) result_vector[9] <= 0;
-	if(_feed_D0) result_vector[10] <= _85;
-	if(start) result_vector[10] <= 0;
-	if(_feed_D0) result_vector[11] <= _93;
-	if(start) result_vector[11] <= 0;
-	if(_feed_D0) result_vector[12] <= _101;
-	if(start) result_vector[12] <= 0;
-	if(_feed_D0) result_vector[13] <= _109;
-	if(start) result_vector[13] <= 0;
-	if(_feed_D0) result_vector[14] <= _117;
-	if(start) result_vector[14] <= 0;
+	if(_start_D3) result_vector[0] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[0] <= _7;
+	if(_start_D3) result_vector[1] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[1] <= _15;
+	if(_start_D3) result_vector[2] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[2] <= _23;
+	if(_start_D3) result_vector[3] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[3] <= _31;
+	if(_start_D3) result_vector[4] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[4] <= _39;
+	if(_start_D3) result_vector[5] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[5] <= _47;
+	if(_start_D3) result_vector[6] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[6] <= _55;
+	if(_start_D3) result_vector[7] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[7] <= _63;
+	if(_start_D3) result_vector[8] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[8] <= _71;
+	if(_start_D3) result_vector[9] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[9] <= _79;
+	if(_start_D3) result_vector[10] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[10] <= _87;
+	if(_start_D3) result_vector[11] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[11] <= _95;
+	if(_start_D3) result_vector[12] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[12] <= _103;
+	if(_start_D3) result_vector[13] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[13] <= _111;
+	if(_start_D3) result_vector[14] <= 0;
+	if(!_start_D3) if(_feed_D3) result_vector[14] <= _119;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2150,7 +2178,7 @@ always_comb begin
 	row_bits[7] = 'x;
 	row_bits[8] = 'x;
 	row_bits[9] = 'x;
-	if(feed) row_bits = vector_bits;
+	if(!start) if(feed) row_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2164,7 +2192,7 @@ always_comb begin
 	row_2_bits[7] = 'x;
 	row_2_bits[8] = 'x;
 	row_2_bits[9] = 'x;
-	if(feed) row_2_bits = vector_bits;
+	if(!start) if(feed) row_2_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2178,7 +2206,7 @@ always_comb begin
 	row_3_bits[7] = 'x;
 	row_3_bits[8] = 'x;
 	row_3_bits[9] = 'x;
-	if(feed) row_3_bits = vector_bits;
+	if(!start) if(feed) row_3_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2192,7 +2220,7 @@ always_comb begin
 	row_4_bits[7] = 'x;
 	row_4_bits[8] = 'x;
 	row_4_bits[9] = 'x;
-	if(feed) row_4_bits = vector_bits;
+	if(!start) if(feed) row_4_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2206,7 +2234,7 @@ always_comb begin
 	row_5_bits[7] = 'x;
 	row_5_bits[8] = 'x;
 	row_5_bits[9] = 'x;
-	if(feed) row_5_bits = vector_bits;
+	if(!start) if(feed) row_5_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2220,7 +2248,7 @@ always_comb begin
 	row_6_bits[7] = 'x;
 	row_6_bits[8] = 'x;
 	row_6_bits[9] = 'x;
-	if(feed) row_6_bits = vector_bits;
+	if(!start) if(feed) row_6_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2234,7 +2262,7 @@ always_comb begin
 	row_7_bits[7] = 'x;
 	row_7_bits[8] = 'x;
 	row_7_bits[9] = 'x;
-	if(feed) row_7_bits = vector_bits;
+	if(!start) if(feed) row_7_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2248,7 +2276,7 @@ always_comb begin
 	row_8_bits[7] = 'x;
 	row_8_bits[8] = 'x;
 	row_8_bits[9] = 'x;
-	if(feed) row_8_bits = vector_bits;
+	if(!start) if(feed) row_8_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2262,7 +2290,7 @@ always_comb begin
 	row_9_bits[7] = 'x;
 	row_9_bits[8] = 'x;
 	row_9_bits[9] = 'x;
-	if(feed) row_9_bits = vector_bits;
+	if(!start) if(feed) row_9_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2276,7 +2304,7 @@ always_comb begin
 	row_10_bits[7] = 'x;
 	row_10_bits[8] = 'x;
 	row_10_bits[9] = 'x;
-	if(feed) row_10_bits = vector_bits;
+	if(!start) if(feed) row_10_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2290,7 +2318,7 @@ always_comb begin
 	row_11_bits[7] = 'x;
 	row_11_bits[8] = 'x;
 	row_11_bits[9] = 'x;
-	if(feed) row_11_bits = vector_bits;
+	if(!start) if(feed) row_11_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2304,7 +2332,7 @@ always_comb begin
 	row_12_bits[7] = 'x;
 	row_12_bits[8] = 'x;
 	row_12_bits[9] = 'x;
-	if(feed) row_12_bits = vector_bits;
+	if(!start) if(feed) row_12_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2318,7 +2346,7 @@ always_comb begin
 	row_13_bits[7] = 'x;
 	row_13_bits[8] = 'x;
 	row_13_bits[9] = 'x;
-	if(feed) row_13_bits = vector_bits;
+	if(!start) if(feed) row_13_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2332,7 +2360,7 @@ always_comb begin
 	row_14_bits[7] = 'x;
 	row_14_bits[8] = 'x;
 	row_14_bits[9] = 'x;
-	if(feed) row_14_bits = vector_bits;
+	if(!start) if(feed) row_14_bits = vector_bits;
 end
 always_comb begin
 	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
@@ -2346,35 +2374,7 @@ always_comb begin
 	row_15_bits[7] = 'x;
 	row_15_bits[8] = 'x;
 	row_15_bits[9] = 'x;
-	if(feed) row_15_bits = vector_bits;
-end
-endmodule
-
-// ::FixedSizeIterator::<UP_TO = 32>
-module FixedSizeIterator_UP_TO_32_(
-	input clk,
-	output /*mux_wire*/ logic  valid,
-	output /*state*/ logic [31:0] value,
-	output /*mux_wire*/ logic  last,
-	input wire  start
-);
-
-wire  _2 = value == 31;
-wire  _4 = value != 32;
-wire [31:0] _7 = value + 1;
-always_comb begin
-	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
-	valid = 'x;
-	valid = _4;
-end
-always_ff @(posedge clk) begin
-	if(start) value <= 0;
-	if(!start) if(valid) value <= _7;
-end
-always_comb begin
-	// Combinatorial wires are not defined when not valid. This is just so that the synthesys tool doesn't generate latches
-	last = 'x;
-	last = _2;
+	if(!start) if(feed) row_15_bits = vector_bits;
 end
 endmodule
 

@@ -14,6 +14,11 @@ BitSerialMatrixMultiplySpecific bsmm (
 );
 
 initial begin
+    $dumpfile("test.vcd");
+    $dumpvars(0,BitSerialMatrixMultiply_tb);
+end
+
+initial begin
     clk = 0;
     forever #5 clk = ~clk;  // 100 MHz clock
 end

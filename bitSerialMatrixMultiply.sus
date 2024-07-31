@@ -16,11 +16,13 @@ module BitSerialMatrixMultiplyTinyIO {
 
 
 module BitSerialMatrixMultiplySpecific {
+    interface BitSerialMatrixMultiplySpecific : 
+        bool start'0, int[10] values'0 -> bool finish'36, int[15] result'36
+
     gen int[10][15] MATRIX
 
     for int X in 0..15 {
         for int Y in 0..10 {
-            // Try 1/4 random-ish number generation
             if ((X + Y) * 7 + ((X+1)*10) / (Y+1)) % 4 == 0 {
                 MATRIX[X][Y] = (X + 2*Y)
             } else {
@@ -31,11 +33,7 @@ module BitSerialMatrixMultiplySpecific {
     
     BitSerialMatrixMultiply::<WIDTH = 10, HEIGHT = 15, MATRIX = MATRIX;> bsmm
 
-    interface BitSerialMatrixMultiplySpecific : 
-        bool start'0, int[10] values'0 -> bool finish'36, int[15] result'36
-
     finish = start
-
     result = bsmm(start, values)
 }
 
