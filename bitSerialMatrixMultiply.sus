@@ -31,7 +31,7 @@ module BitSerialMatrixMultiplySpecific {
         }
     }
     
-    BitSerialMatrixMultiply::<WIDTH = 10, HEIGHT = 15, MATRIX = MATRIX;> bsmm
+    BitSerialMatrixMultiply #(WIDTH: 10, HEIGHT: 15, MATRIX) bsmm
 
     finish = start
     result = bsmm(start, values)
@@ -39,18 +39,15 @@ module BitSerialMatrixMultiplySpecific {
 
 
 
-module BitSerialMatrixMultiply {
-    input gen int WIDTH
-    input gen int HEIGHT
-    input gen int[WIDTH][HEIGHT] MATRIX
+module BitSerialMatrixMultiply #(int WIDTH, int HEIGHT, int[WIDTH][HEIGHT] MATRIX) {
     // 32 right now, because ints are't sized yet. 
     gen int INT_BITWIDTH = 32
 
     interface BitSerialMatrixMultiply : bool start, int[WIDTH] values -> int[HEIGHT] result
 
-    BitShifter::<WIDTH, 32;> shifter
-    FixedSizeIterator::<UP_TO = 32;> iter
-    BitSerialMatrixMultiplyState::<WIDTH, HEIGHT, MATRIX;> bsm_state
+    BitShifter #(WIDTH, INT_BITWIDTH: 32) shifter
+    FixedSizeIterator #(UP_TO: 32) iter
+    BitSerialMatrixMultiplyState #(WIDTH, HEIGHT, MATRIX) bsm_state
 
     shifter.start(start, values)
     iter.start(start)
@@ -59,13 +56,10 @@ module BitSerialMatrixMultiply {
     bool[WIDTH] bits = shifter.shift(iter.valid)
     bsm_state.feed(iter.valid, bits)
 
-    result = LatencyOffset::<INT_BITWIDTH+1;int[HEIGHT]>(bsm_state.result_vector)
+    result = LatencyOffset #(OFFSET: INT_BITWIDTH+1, T: type int[HEIGHT])(bsm_state.result_vector)
 }
 
-module BitShifter {
-    input gen int WIDTH
-    input gen int INT_BITWIDTH
-
+module BitShifter #(int WIDTH, int INT_BITWIDTH) {
     interface start : bool start, int[WIDTH] values
     interface shift : bool shift -> bool[WIDTH] bits
 
@@ -90,19 +84,14 @@ module BitShifter {
     }
 }
 
-module BitSerialMatrixMultiplyState {
-    input gen int WIDTH
-    input gen int HEIGHT
-
-    input gen int[WIDTH][HEIGHT] MATRIX
-
+module BitSerialMatrixMultiplyState #(int WIDTH, int HEIGHT, int[WIDTH][HEIGHT] MATRIX) {
     interface start : bool start
     interface feed : bool feed, bool[WIDTH] vector_bits
 
     output state int[HEIGHT] result_vector
 
     for int Y in 0..HEIGHT {
-        BitSerialRow::<SIZE = WIDTH, WEIGHTS = MATRIX[Y];> row
+        BitSerialRow #(SIZE: WIDTH, WEIGHTS: MATRIX[Y]) row
 
         if start {
             result_vector[Y] = 0
@@ -112,10 +101,7 @@ module BitSerialMatrixMultiplyState {
     }
 }
 
-module BitSerialRow {
-    input gen int SIZE
-    input gen int[SIZE] WEIGHTS
-
+module BitSerialRow #(int SIZE, int[SIZE] WEIGHTS) {
     interface BitSerialRow : bool[SIZE] bits'0 -> int row_total
 
     gen int NONZERO_COUNT = 0
@@ -144,7 +130,7 @@ module BitSerialRow {
             }
         }
 
-        row_total = TreeAdd::<NONZERO_COUNT;>(nonzero_weights)
+        row_total = TreeAdd #(WIDTH: NONZERO_COUNT)(nonzero_weights)
     }
 }
 

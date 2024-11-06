@@ -2,12 +2,11 @@
 
 This is an example hardware project written in [SUS](https://github.com/pc2/sus-compiler/). It implements the Bit Serial Matrix Multiplication algorithm for efficient FPGA synthesis of Vector by Compile Time Matrix Multiplication. The main trick here is that by streaming the Vector values through the multipliers one bit at a time, instead of INT_SIZExINT_SIZE bit multipliers, you only need 1xINT_SIZE multipliers, which with constant multiplicant optimizes to simple wires. Matrix sparsity can be readily exploited here for cheaper a implementation. 
 
-This example was tested using `sus_compiler --version`: `SUS Compiler 0.0.2`
+This example was tested using `sus_compiler --version`: `SUS Compiler 0.1.1`
 
 ## Structure
 - [`bitSerialMatrixMultiply.sus`](bitSerialMatrixMultiply.sus): File implementing the algorithm
 - [`bitSerialMatrixMultiply_tb.sv`](bitSerialMatrixMultiply_tb.sv): SystemVerilog testbench
-- [`core.sus`](core.sus), [`util.sus`](util.sus): Standard library files. These have to be bundled together with the project for now, as SUS doesn't have a package manager yet. 
 - [`constraints.xdc`](constraints.xdc): Definition for the clock for Vivado synthesis
 - [`verilog_output`](verilog_output): sus_compiler output directory. This contains any files the SUS compiler generates. 
 
